@@ -1,6 +1,12 @@
 #include "HelloWorldScene.h"
+#include "json/rapidjson.h"
+#include "json/document.h"
 
 USING_NS_CC;
+
+const static int PLAYER_TEXT_X = 900;
+const static int OTHER_TEXT_X = 50;
+const static int TEXT_H = 60;
 
 Scene* HelloWorld::createScene()
 {
@@ -20,6 +26,8 @@ Scene* HelloWorld::createScene()
 // on "init" you need to initialize your instance
 bool HelloWorld::init()
 {
+    index = 0;
+    
     //////////////////////////////
     // 1. super init first
     if ( !Layer::init() )
@@ -30,62 +38,128 @@ bool HelloWorld::init()
     Size visibleSize = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
-    /////////////////////////////
-    // 2. add a menu item with "X" image, which is clicked to quit the program
-    //    you may modify it.
-
-    // add a "close" icon to exit the progress. it's an autorelease object
-    auto closeItem = MenuItemImage::create(
-                                           "CloseNormal.png",
-                                           "CloseSelected.png",
-                                           CC_CALLBACK_1(HelloWorld::menuCloseCallback, this));
+    edit_box = TextField::create("please input text" , "Meiryo" , 40);
+    edit_box->setContentSize(Size(visibleSize.width , 50));
+    edit_box->setPosition(Point(visibleSize.width / 2 , 30));
+    edit_box->addEventListener(CC_CALLBACK_2(HelloWorld::textFieldEvent, this));
+    this->addChild(edit_box);
     
-	closeItem->setPosition(Vec2(origin.x + visibleSize.width - closeItem->getContentSize().width/2 ,
-                                origin.y + closeItem->getContentSize().height/2));
-
-    // create menu, it's an autorelease object
-    auto menu = Menu::create(closeItem, NULL);
-    menu->setPosition(Vec2::ZERO);
-    this->addChild(menu, 1);
-
-    /////////////////////////////
-    // 3. add your codes below...
-
-    // add a label shows "Hello World"
-    // create and initialize a label
-    
-    auto label = Label::createWithTTF("Hello World", "fonts/Marker Felt.ttf", 24);
-    
-    // position the label on the center of the screen
-    label->setPosition(Vec2(origin.x + visibleSize.width/2,
-                            origin.y + visibleSize.height - label->getContentSize().height));
-
-    // add the label as a child to this layer
-    this->addChild(label, 1);
-
-    // add "HelloWorld" splash screen"
-    auto sprite = Sprite::create("HelloWorld.png");
-
-    // position the sprite on the center of the screen
-    sprite->setPosition(Vec2(visibleSize.width/2 + origin.x, visibleSize.height/2 + origin.y));
-
-    // add the sprite as a child to this layer
-    this->addChild(sprite, 0);
+    // ここでsocket.io connection開始。clientを持っておく
+    client = SocketIO::connect("http://xxx.compute.amazonaws.com:3000", *this);
+    client->on("hello", CC_CALLBACK_2(HelloWorld::onReceiveEvent, this));
     
     return true;
 }
 
+void HelloWorld::onConnect(SIOClient* client){
+    // SocketIO::connect success
+}
 
-void HelloWorld::menuCloseCallback(Ref* pSender)
+void HelloWorld::onMessage(SIOClient* client, const std::string& data){
+    // SocketIO::send receive
+}
+void HelloWorld::onClose(SIOClient* client){
+    // SocketIO::disconnect success
+}
+void HelloWorld::onError(SIOClient* client, const std::string& data){
+    // SocketIO::failed
+}
+
+void HelloWorld::onReceiveEvent(SIOClient* client , const std::string& data)
 {
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_WP8) || (CC_TARGET_PLATFORM == CC_PLATFORM_WINRT)
-	MessageBox("You pressed the close button. Windows Store Apps do not implement a close button.","Alert");
-    return;
-#endif
+    rapidjson::Document doc;
+    doc.Parse<rapidjson::kParseDefaultFlags>(data.c_str());
+    rapidjson::Value &val = doc["args"];
+    std::string value = val[rapidjson::SizeType(0)]["value"].GetString();
+    
+    addTalkOther(value);
+};
 
-    Director::getInstance()->end();
+void HelloWorld::textFieldEvent(Ref *pSender, TextField::EventType type)
+{
+    TextField* text;
+    std::string sendText;
+    switch (type)
+    {
+            // IMEが閉じた時
+        case TextField::EventType::DETACH_WITH_IME:
+            text = (TextField*)pSender;
+            
+            sendText = "[{\"value\":\"" + text->getString() + "\"}]";
+            client->emit("hello", sendText);
+            addTalkPlayer(text->getString());
+            break;
+        default:
+            break;
+    }
+}
 
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
-    exit(0);
-#endif
+/**
+ * プレイヤーUI
+ */
+void HelloWorld::addTalkPlayer(const std::string& str){
+    Size size = Director::getInstance()->getVisibleSize();
+    
+    DrawNode* draw = DrawNode::create();
+    
+    int originalX = PLAYER_TEXT_X;
+    int originalY = size.height - (TEXT_H * (index + 1));
+    
+    int x = originalX - 290;
+    int y = originalY - 60;
+    int w = 300;
+    int h = 60;
+    
+    Vec2 points[] = {
+        Vec2(x , y),
+        Vec2(x + w , y),
+        Vec2(x + w , y + h),
+        Vec2(x , y + h),
+    };
+    
+    this->addChild(draw);
+    draw->drawPolygon(points, 4, Color4F(0 , 0.5, 0, 1), 1, Color4F(0,0,1,1));
+    
+    auto text = Text::create(str, "Meiryo", 40);
+    text->setTextHorizontalAlignment(TextHAlignment::RIGHT);
+    text->setAnchorPoint(Point(1.0 , 1.0));
+    text->setPosition(Point(originalX , originalY));
+    
+    this->addChild(text);
+    index++;
+}
+
+/**
+ * その他UI
+ */
+void HelloWorld::addTalkOther(const std::string& str){
+    Size size = Director::getInstance()->getVisibleSize();
+    
+    DrawNode* draw = DrawNode::create();
+    
+    int originalX = OTHER_TEXT_X;
+    int originalY = size.height - (TEXT_H * (index + 1));
+    
+    int x = originalX - 10;
+    int y = originalY - 60;
+    int w = 300;
+    int h = 60;
+    
+    Vec2 points[] = {
+        Vec2(x , y),
+        Vec2(x + w , y),
+        Vec2(x + w , y + h),
+        Vec2(x , y + h),
+    };
+    
+    this->addChild(draw);
+    draw->drawPolygon(points, 4, Color4F(0.5, 0, 0, 1), 1, Color4F(1,0,0,1));
+    
+    auto text = Text::create(str, "Meiryo", 40);
+    text->setTextHorizontalAlignment(TextHAlignment::LEFT);
+    text->setAnchorPoint(Point(0.0 , 1.0));
+    text->setPosition(Point(originalX , originalY));
+    text->setColor(Color3B(255, 255, 0));
+    this->addChild(text);
+    index++;
 }
