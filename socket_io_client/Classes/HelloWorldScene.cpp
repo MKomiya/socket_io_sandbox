@@ -45,7 +45,7 @@ bool HelloWorld::init()
     this->addChild(edit_box);
     
     // ここでsocket.io connection開始。clientを持っておく
-    client = SocketIO::connect("http://xxx.compute.amazonaws.com:3000", *this);
+    client = SocketIO::connect("http://ec2-52-11-116-58.us-west-2.compute.amazonaws.com:3000", *this);
     client->on("hello", CC_CALLBACK_2(HelloWorld::onReceiveEvent, this));
     
     return true;
