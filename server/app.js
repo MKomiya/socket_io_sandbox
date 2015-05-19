@@ -8,7 +8,7 @@ var player_list = [];
 io.on('connection', function(socket) {
   console.log("connected");
 
-  var player_id = Math.random() * 2147483647;
+  var player_id = Math.floor(Math.random() * 2147483647);
   player_list.push(player_id);
 
   console.log("player_list:");
