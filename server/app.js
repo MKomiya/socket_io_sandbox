@@ -4,6 +4,7 @@ var socketIO = require('socket.io');
 var io = socketIO.listen(server);
 
 var player_list = [];
+var room_list   = [];
 
 io.on('connection', function(socket) {
   console.log("connected");
@@ -22,6 +23,7 @@ io.on('connection', function(socket) {
 
   // setting disconnect event
   socket.on("disconnect", function() {
+    player_list.pop();
     console.log("disconnected");
   });
 
