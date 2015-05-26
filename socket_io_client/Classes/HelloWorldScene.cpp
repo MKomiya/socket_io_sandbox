@@ -48,6 +48,23 @@ bool HelloWorld::init()
     client = SocketIO::connect("http://ec2-52-11-116-58.us-west-2.compute.amazonaws.com:3000", *this);
     client->on("hello", CC_CALLBACK_2(HelloWorld::onReceiveEvent, this));
     
+    // TCPサーバー立てる
+    auto console = Director::getInstance()->getConsole();
+    
+    // helloと繋ぐ
+    auto name = "hello";
+    auto help = "send message to socket server";
+    auto callback = [=] (int fd, const std::string& args) {
+        Director::getInstance()->getScheduler()->performFunctionInCocosThread([args,this]() {
+            CCLOG("%s", args.c_str());
+            
+            auto sendText = "[{\"value\":\"" + args + "\"}]";
+            client->emit("hello", sendText);
+        });
+    };
+    console->addCommand({name, help, callback});
+    console->listenOnTCP(6010);
+    
     return true;
 }
 
