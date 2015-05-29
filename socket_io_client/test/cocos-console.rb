@@ -1,15 +1,15 @@
 #!/usr/bin/ruby
 
 require "socket"
-
-if ARGV[0] == nil then
-  return;
-end
-
 sock = TCPSocket.open("localhost", 6010)
 
-command = "hello #{ARGV[0]}\n"
+loop do
+  msg = STDIN.gets.strip
+  next if msg.empty?
 
-sock.write(command)
+  break if msg == "exit"
+
+  sock.write(msg)
+end
 
 sock.close
