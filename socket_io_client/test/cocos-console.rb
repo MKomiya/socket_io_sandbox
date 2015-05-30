@@ -3,13 +3,12 @@
 require "socket"
 sock = TCPSocket.open("localhost", 6010)
 
-loop do
-  msg = STDIN.gets.strip
-  next if msg.empty?
-
-  break if msg == "exit"
-
+while msg = STDIN.gets
+  print("you writed: #{msg}")
   sock.write(msg)
+  while ret = sock.gets
+    print("#{ret}")
+  end
 end
 
 sock.close
