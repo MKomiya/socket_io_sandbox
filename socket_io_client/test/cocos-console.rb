@@ -7,7 +7,7 @@ while msg = STDIN.gets
   print("you writed: #{msg}")
   sock.write(msg)
   while ret = sock.gets
-    print("#{ret}")
+    print("> #{ret}")
   end
 end
 
