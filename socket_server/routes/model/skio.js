@@ -25,7 +25,7 @@ function skio() {
     socket.on('move', function(data) {
       console.log('moved: (' + data.x + ', ' + data.y + ')');
       socket.emit('move', { x : data.x, y : data.y });
-    })
+    });
 
     socket.on("disconnect", function() {
       player_list.pop();
