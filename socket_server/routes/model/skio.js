@@ -32,7 +32,7 @@ function skio() {
 
     socket.on('msg_post', function(data) {
       socket.to(socket.setRoomInfo).emit("hello", data.msg);
-    })
+    });
 
     socket.on('move', function(data) {
       console.log('moved: (' + data.x + ', ' + data.y + ')');
