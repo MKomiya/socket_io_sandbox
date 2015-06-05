@@ -40,7 +40,6 @@ function skio() {
     });
 
     socket.on("disconnect", function() {
-      player_list.pop();
       console.log("disconnected");
     });
   });
