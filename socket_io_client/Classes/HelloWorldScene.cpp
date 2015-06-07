@@ -66,6 +66,15 @@ bool HelloWorld::init()
         });
     };
     console->addCommand({name, help, callback});
+    
+    auto join_help     = "join rooms";
+    auto join_callback = [=] (int fd, const std::string& args) {
+        Director::getInstance()->getScheduler()->performFunctionInCocosThread([args,this]() {
+            CCLOG("%s", args.c_str());
+            this->joinRoomEvent(args);
+        });
+    };
+    console->addCommand({"join", join_help, join_callback});
     console->listenOnTCP(6010);
     
     return true;
@@ -73,7 +82,7 @@ bool HelloWorld::init()
 
 void HelloWorld::onConnect(SIOClient* client){
     // SocketIO::connect success
-    this->joinRoomEvent();
+    this->joinRoomEvent("TestRoom");
 }
 
 void HelloWorld::onMessage(SIOClient* client, const std::string& data){
@@ -96,9 +105,10 @@ void HelloWorld::onReceiveEvent(SIOClient* client , const std::string& data)
     addTalkOther(value);
 };
 
-void HelloWorld::joinRoomEvent()
+void HelloWorld::joinRoomEvent(const std::string& room_name)
 {
-    client->emit("join", "[{\"room\":\"TestRoom\"}]");
+    auto data = "[{\"room\":\"" + room_name + "\"}]";
+    client->emit("join", data);
 }
 
 void HelloWorld::textFieldEvent(Ref *pSender, TextField::EventType type)
