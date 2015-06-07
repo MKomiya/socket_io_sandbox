@@ -3,13 +3,20 @@
 require "socket"
 sock = TCPSocket.open("localhost", 6010)
 
-while msg = STDIN.gets
-  print("you writed: #{msg}")
-  sock.write(msg)
+puts("Listen command.")
+#print("> ")
 
-  sock.each_line { |line|
-    puts line
-  }
+th = Thread.new {
+  while ret = sock.gets
+    puts ret
+  end
+}
+
+while msg = STDIN.gets
+  puts("sending #{msg}")
+  sock.write(msg)
 end
+
+th.join
 
 sock.close
