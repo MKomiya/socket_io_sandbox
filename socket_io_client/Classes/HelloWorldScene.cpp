@@ -8,6 +8,9 @@ const static int PLAYER_TEXT_X = 900;
 const static int OTHER_TEXT_X = 50;
 const static int TEXT_H = 60;
 
+//const static std::string SOCKET_SERVER_URL = "http://ec2-52-11-116-58.us-west-2.compute.amazonaws.com:3000";
+const static std::string SOCKET_SERVER_URL = "http://localhost:3000";
+
 Scene* HelloWorld::createScene()
 {
     // 'scene' is an autorelease object
@@ -45,7 +48,7 @@ bool HelloWorld::init()
     this->addChild(edit_box);
     
     // ここでsocket.io connection開始。clientを持っておく
-    client = SocketIO::connect("http://ec2-52-11-116-58.us-west-2.compute.amazonaws.com:3000", *this);
+    client = SocketIO::connect(SOCKET_SERVER_URL, *this);
     client->on("hello", CC_CALLBACK_2(HelloWorld::onReceiveEvent, this));
     
     // TCPサーバー立てる
@@ -70,6 +73,7 @@ bool HelloWorld::init()
 
 void HelloWorld::onConnect(SIOClient* client){
     // SocketIO::connect success
+    this->joinRoomEvent();
 }
 
 void HelloWorld::onMessage(SIOClient* client, const std::string& data){
@@ -91,6 +95,11 @@ void HelloWorld::onReceiveEvent(SIOClient* client , const std::string& data)
     
     addTalkOther(value);
 };
+
+void HelloWorld::joinRoomEvent()
+{
+    client->emit("join", "[{\"room\":\"TestRoom\"}]");
+}
 
 void HelloWorld::textFieldEvent(Ref *pSender, TextField::EventType type)
 {

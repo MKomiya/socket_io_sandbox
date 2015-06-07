@@ -12,15 +12,16 @@ function skio() {
 
     socket.on('hello', function(data) {
       console.log('message: ' + data.value);
-      socket.emit('hello', { value : data.value});
+      socket.emit('hello', { value : data.value + " : " + socket.setRoomInfo });
     });
 
-    socket.on('init', function(data) {
+    socket.on('join', function(data) {
       socket.setRoomInfo = data.room;
       socket.join(data.room);
       socket.join(socket.id);
 
       console.log(data.room + " join");
+      console.log("user_id: " + socket.id);
     });
 
     socket.on('msg_post', function(data) {
