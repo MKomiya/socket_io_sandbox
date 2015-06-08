@@ -4,7 +4,6 @@ require "socket"
 sock = TCPSocket.open("localhost", 6010)
 
 puts("Listen command.")
-#print("> ")
 
 th = Thread.new {
   while ret = sock.gets
