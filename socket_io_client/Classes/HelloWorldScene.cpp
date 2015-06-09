@@ -50,6 +50,7 @@ bool HelloWorld::init()
     // ここでsocket.io connection開始。clientを持っておく
     client = SocketIO::connect(SOCKET_SERVER_URL, *this);
     client->on("hello", CC_CALLBACK_2(HelloWorld::onReceiveEvent, this));
+    client->on("get_rooms", CC_CALLBACK_2(HelloWorld::onReceiveRooms, this));
     
     // TCPサーバー立てる
     auto console = Director::getInstance()->getConsole();
@@ -75,6 +76,13 @@ bool HelloWorld::init()
         });
     };
     console->addCommand({"join", join_help, join_callback});
+    
+    auto userlist_help     = "get userlist in current room";
+    auto userlist_callback = [=] (int fd, const std::string& args) {
+        CCLOG("%s", args.c_str());
+        client->emit("get_rooms", args);
+    };
+    console->addCommand({"get_rooms", userlist_help, userlist_callback});
     console->listenOnTCP(6010);
     
     return true;
@@ -101,6 +109,16 @@ void HelloWorld::onReceiveEvent(SIOClient* client , const std::string& data)
     doc.Parse<rapidjson::kParseDefaultFlags>(data.c_str());
     rapidjson::Value &val = doc["args"];
     std::string value = val[rapidjson::SizeType(0)]["value"].GetString();
+    
+    addTalkOther(value);
+};
+
+void HelloWorld::onReceiveRooms(SIOClient* client , const std::string& data)
+{
+    rapidjson::Document doc;
+    doc.Parse<rapidjson::kParseDefaultFlags>(data.c_str());
+    rapidjson::Value &val = doc["args"];
+    std::string value = val[rapidjson::SizeType(0)]["rooms"].GetString();
     
     addTalkOther(value);
 };

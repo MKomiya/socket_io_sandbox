@@ -2,6 +2,8 @@ var app  = require('../../app');
 var http = require('http').Server(app);
 var io   = require('socket.io').listen(http);
 
+var userlist = {};
+
 function skio() {
   http.listen(app.get('port'), function() {
     console.log('Start listening...');
@@ -22,6 +24,10 @@ function skio() {
 
       console.log(data.room + " join");
       console.log("user_id: " + socket.id);
+    });
+
+    socket.on('get_rooms', function(data) {
+      socket.emit('get_rooms', { rooms : socket.manager.rooms });
     });
 
     socket.on('msg_post', function(data) {

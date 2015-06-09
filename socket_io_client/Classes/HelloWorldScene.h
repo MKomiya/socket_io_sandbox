@@ -20,6 +20,7 @@ public:
     static cocos2d::Scene* createScene();
 
     void onReceiveEvent(SIOClient* client, const std::string& data);
+    void onReceiveRooms(SIOClient* client, const std::string& data);
     void joinRoomEvent(const std::string& room_name);
     
     virtual void onConnect(SIOClient* client);
