@@ -83,6 +83,15 @@ bool HelloWorld::init()
         client->emit("get_rooms", args);
     };
     console->addCommand({"get_rooms", userlist_help, userlist_callback});
+    
+    // 座標を定期的に同期させる
+    auto sync_point_help     = "sync player data point";
+    auto sync_point_callback = [=] (int fd, const std::string& args) {
+        // まだテスト座標
+        auto sendText = "[{\"x\":\"100\", \"y\":\"300\"}]";
+        client->emit("sync_point", sendText);
+    };
+    console->addCommand({"sync_point", userlist_help, userlist_callback});
     console->listenOnTCP(6010);
     
     return true;
