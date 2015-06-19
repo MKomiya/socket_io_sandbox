@@ -14,7 +14,7 @@ private:
     int index;
     SIOClient* client;
     TextField* edit_box;
-    
+
 public:
     // there's no 'id' in cpp, so we recommend returning the class instance pointer
     static cocos2d::Scene* createScene();
@@ -22,19 +22,20 @@ public:
     void onReceiveEvent(SIOClient* client, const std::string& data);
     void onReceiveRooms(SIOClient* client, const std::string& data);
     void joinRoomEvent(const std::string& room_name);
-    
+
     virtual void onConnect(SIOClient* client);
     virtual void onMessage(SIOClient* client, const std::string& data);
     virtual void onClose(SIOClient* client);
     virtual void onError(SIOClient* client, const std::string& data);
-    
+
     void textFieldEvent(Ref *pSender, TextField::EventType type);
+    std::string HelloWorld::getValue(const std::string& data, const std::string key);
     void addTalkPlayer(const std::string& str);
     void addTalkOther(const std::string& str);
-    
+
     // Here's a difference. Method 'init' in cocos2d-x returns bool, instead of returning 'id' in cocos2d-iphone
     virtual bool init();
-  
+
     // implement the "static create()" method manually
     CREATE_FUNC(HelloWorld);
 };
